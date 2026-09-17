@@ -1,0 +1,63 @@
+{
+  "_comment": "Extra models the router may use, merged over the built-in Anthropic catalog. Prices are US dollars per million tokens. Adding a model here needs no code change; the provider still has to be registered on the router, and its credential present, or the model is simply not usable.",
+  "_example": {
+    "id": "some-model-id",
+    "provider": "openai",
+    "context_tokens": 400000,
+    "input_cost_per_mtok": 1.25,
+    "output_cost_per_mtok": 10.0,
+    "tier": "balanced",
+    "strengths": [
+      "review",
+      "coding"
+    ],
+    "supports_server_tools": false,
+    "notes": "Set OPENAI_API_KEY and OPENAI_MODEL to make this usable."
+  },
+  "models": [
+    {
+      "id": "meta/llama-3.3-70b-instruct",
+      "provider": "nvidia",
+      "context_tokens": 128000,
+      "input_cost_per_mtok": 0.0,
+      "output_cost_per_mtok": 0.0,
+      "tier": "balanced",
+      "strengths": [
+        "analysis",
+        "review"
+      ],
+      "supports_server_tools": false,
+      "notes": "A second vendor, so routing quality becomes comparable at all. No server-side tools: an agent needing web search must not be routed here. Needs NVIDIA_API_KEY and NVIDIA_MODEL."
+    },
+    {
+      "id": "grok-4-fast",
+      "provider": "grok",
+      "context_tokens": 2000000,
+      "input_cost_per_mtok": 0.2,
+      "output_cost_per_mtok": 0.5,
+      "tier": "fast",
+      "strengths": [
+        "simple",
+        "analysis"
+      ],
+      "supports_server_tools": false,
+      "notes": "Needs XAI_API_KEY and XAI_MODEL. Verify the id against x.ai before relying on it."
+    },
+    {
+      "id": "gemini-2.5-flash",
+      "provider": "gemini",
+      "context_tokens": 1000000,
+      "input_cost_per_mtok": 0.3,
+      "output_cost_per_mtok": 2.5,
+      "tier": "balanced",
+      "strengths": [
+        "analysis",
+        "review"
+      ],
+      "supports_server_tools": false,
+      "notes": "Reached over Google's OpenAI-compatibility endpoint. Needs GEMINI_API_KEY and GEMINI_MODEL."
+    }
+  ],
+  "_nvidia_note": "NVIDIA NIM speaks Chat Completions, so it reuses the OpenAI provider with a different base URL. Set NVIDIA_API_KEY and NVIDIA_MODEL to make an entry below usable. Prices here are 0.0 deliberately: the build.nvidia.com free tier is not metered per token, so a made-up figure would put fiction in the cost ledger. A 0.0 price means 'this model reports no cost', which is a different claim from 'this model is free' and the one the data supports.",
+  "_vendor_note": "Four vendors reachable over Chat Completions: OpenAI, NVIDIA, xAI and Gemini. Each needs its own <VENDOR>_API_KEY and <VENDOR>_MODEL, or the provider does not register and its models are simply not usable. None declares supports_server_tools: Chat Completions has no equivalent of Anthropic's server-side web search, and the router filters on that flag \u2014 a wrong value would send a research agent to a model that cannot search and then blame the agent for citing nothing. Prices are 0.0 where the tier is not metered per token; 0.0 means 'reports no cost', which is a different claim from 'is free' and the only one the data supports."
+}

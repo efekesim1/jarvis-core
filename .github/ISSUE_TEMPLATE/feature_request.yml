@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose a capability or a change in behaviour
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For anything that adds an external write capability, a new tool, or a
+        change to a security boundary, please describe the threat model as
+        well as the feature.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What is hard or impossible today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The proposal
+      description: What you would like the behaviour to be.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Would this touch a boundary?
+      options:
+        - label: It adds or widens a tool capability
+        - label: It performs an external write or a deployment
+        - label: It spends money
+        - label: It changes what runs without human approval
+        - label: None of these

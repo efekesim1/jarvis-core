@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install --upgrade "setuptools>=83.0.0" && pip install -e ".[dev]"
+      - name: ruff check
+        run: ruff check src tests examples
+      - name: ruff format
+        run: ruff format --check src tests examples
+
+  test:
+    name: Test (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install --upgrade "setuptools>=83.0.0" && pip install -e ".[dev]"
+      # Every test runs against the offline provider: no key, no network, and
+      # nothing billed. A test that needed either would be a broken test.
+      - name: pytest
+        run: pytest -q
+      - name: Offline end-to-end demo
+        run: python examples/demo_offline.py
+      - name: Cost controls still save money
+        run: python examples/benchmark_cost.py
+      - name: The tool gateway blocks what it should
+        run: python examples/demo_tool_gateway.py
+      - name: An approval survives across two processes
+        run: python examples/demo_overnight_approval.py
+      - name: The sandbox holds and nothing is adopted
+        run: python examples/demo_sandbox.py
+      - name: The gateway's own overhead stays inside its bar
+        run: python examples/benchmark_gateway.py
+
+  docker:
+    name: Container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t jarvis-core:ci .
+      # Proves the image is sound without a credential: the registry loads and
+      # the suite runs entirely against the offline provider.
+      - name: Run the suite inside the container
+        run: docker run --rm jarvis-core:ci pytest -q
+      - name: Run the offline demo inside the container
+        run: docker run --rm jarvis-core:ci python examples/demo_offline.py
+      - name: Run the tool-gateway demo inside the container
+        run: docker run --rm jarvis-core:ci python examples/demo_tool_gateway.py
+
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install --upgrade pip "setuptools>=83.0.0"
+      - run: pip install -e ".[dev]"
+
+      - name: Static analysis
+        run: bandit -q -r src -ll
+
+      - name: Known vulnerable dependencies
+        run: pip-audit --skip-editable --progress-spinner off
+        continue-on-error: true
+
+      - name: No credential may be committed
+        run: |
+          set -euo pipefail
+          # Real key prefixes and private key blocks. The pattern is split so
+          # this step never matches its own source.
+          if grep -rInE "(sk-ant-)(api|admin)[0-9]{2}-|(sk-proj-)[A-Za-z0-9_-]{20}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN [A-Z ]*PRIVATE KEY" \
+               --include="*.py" --include="*.yaml" --include="*.yml" \
+               --include="*.json" --include="*.toml" --include="*.md" --include="*.sh" \
+               src agents config tests docs examples scripts Makefile Dockerfile; then
+            echo "::error::a credential appears to be committed"
+            exit 1
+          fi
+          echo "no committed credential found"
+
+      - name: No .env may be committed
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env is tracked by git"
+            exit 1
+          fi
+          echo ".env is not tracked"

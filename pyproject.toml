@@ -1,0 +1,89 @@
+[project]
+name = "jarvis-core"
+version = "0.1.0"
+description = "A multi-agent, multi-model AI runtime with real permissions, budgets, sandboxing and human approvals"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+keywords = ["ai", "agents", "orchestration", "llm", "mcp", "tool-use", "observability"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Typing :: Typed",
+]
+dependencies = [
+  "anthropic>=1.0.0",
+  "pydantic>=2.0.0",
+  "pydantic-settings>=2.0.0",
+  "pyyaml>=6.0",
+  "typer>=0.12.0",
+  "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+# The official MCP SDK, needed only for the stdio transport to real servers.
+# Everything else, including the whole test suite, runs without it.
+mcp = ["mcp>=2.0.0"]
+# The HTTP interface. Optional because the CLI is the primary surface and the
+# runtime works, and tests, with no web server installed.
+api = ["fastapi>=0.115", "uvicorn>=0.30"]
+# Any vendor that speaks the Chat Completions protocol: OpenAI itself, and
+# NVIDIA NIM, xAI and Gemini through their compatibility endpoints.
+openai = ["openai>=1.0.0"]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+  "ruff>=0.6.0",
+  "bandit>=1.7.0",
+  "pip-audit>=2.7.0",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "httpx>=0.27",
+  "openai>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/efekesim1/jarvis-core"
+Repository = "https://github.com/efekesim1/jarvis-core"
+Issues = "https://github.com/efekesim1/jarvis-core/issues"
+Changelog = "https://github.com/efekesim1/jarvis-core/blob/main/CHANGELOG.md"
+
+[project.scripts]
+jarvis = "jarvis_core.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jarvis_core"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["error::DeprecationWarning:jarvis_core.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+# Named explicitly so the import blocks sort the same way whether or not the
+# package happens to be installed in the environment running the linter.
+known-first-party = ["jarvis_core"]
+
+[tool.ruff.lint.per-file-ignores]
+# B008 forbids a function call in an argument default, which is exactly how
+# FastAPI declares a dependency. The rule is right in general and wrong for
+# this framework, so it is turned off for the API and nowhere else.
+"src/jarvis_core/api/*.py" = ["B008"]
+# Tests import after a skip guard, which E402 reads as a misplaced import.
+"tests/*" = ["E402"]

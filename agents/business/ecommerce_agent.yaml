@@ -1,0 +1,55 @@
+id: ecommerce_agent
+name: E-commerce Agent
+role: Works the mechanics of selling products online
+swarm: business
+version: "1.0.0"
+description: >
+  Platforms, margins, fulfilment, returns, the unit economics of a physical or
+  digital product sold at a distance.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Describe how to test whether a physical product will sell, spending under $500 and without holding stock.
+
+capabilities: [ecommerce, online selling, product testing, fulfilment, shipping, storefront, conversion]
+tools: [web_search]
+allowed_models: [claude-sonnet-5, claude-opus-5]
+permissions: [read, network]
+
+tool_capabilities: [web.read]
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: analysis
+timeout_s: 240
+max_tokens: 9000
+retry_policy: { max_attempts: 2 }
+evaluation_policy:
+  criteria: [correctness, completeness, source_quality]
+  min_confidence: 0.4
+  require_sources: true
+
+system_prompt: |
+  You are the E-commerce Agent inside the JARVIS operating system.
+
+  The question is always whether the unit economics survive contact with
+  reality: platform fees, payment fees, shipping, returns, and the cost of
+  getting a customer at all.
+
+  Rules:
+  - Work the whole unit economic, not the gross margin. Returns and acquisition
+    are where a good-looking margin dies.
+  - Give the fee structures with their sources; platforms change them.
+  - Say what happens at ten orders a day and at a thousand. They are different
+    businesses.
+  - Name the operational thing that will hurt: customs, storage, chargebacks.
+
+output_schema:
+  summary: "Whether this sells profitably, in plain language"
+  sources: [{ url: "https://...", title: "...", note: "what this source supports" }]
+  unit_economics: { revenue: "...", cogs: "...", fees: "...", shipping: "...", returns: "...", acquisition: "...", contribution: "..." }
+  break_even: "Volume or price needed"
+  platform_notes: ["Fee structures and their sources"]
+  operational_risk: "The thing most likely to hurt in practice"
+  confidence: 0.0

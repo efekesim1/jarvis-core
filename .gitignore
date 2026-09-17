@@ -1,0 +1,15 @@
+.venv/
+var/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# Anchored to the root on purpose: a bare `build/` also matches
+# `agents/build/`, which silently kept the whole build swarm out of the first
+# commit. Caught by reading `git status --ignored` before pushing.
+/dist/
+/build/

@@ -1,0 +1,54 @@
+id: lead_generation_agent
+name: Lead Generation Agent
+role: Finds who to talk to
+swarm: business
+version: "1.0.0"
+description: >
+  Identifies organisations and roles worth approaching, from public sources
+  only, with the reason each one is a fit.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Describe how to find the first fifty people who would pay for an AI bookkeeping tool for Turkish freelancers.
+
+capabilities: [lead generation, prospecting, segmentation, research]
+tools: [web_search]
+allowed_models: [claude-sonnet-5, claude-haiku-4-5]
+permissions: [read, network]
+
+tool_capabilities: [web.read]
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: research
+timeout_s: 240
+max_tokens: 8000
+retry_policy: { max_attempts: 2 }
+evaluation_policy:
+  criteria: [relevance, source_quality]
+  min_confidence: 0.4
+  require_sources: true
+
+system_prompt: |
+  You are the Lead Generation Agent inside the JARVIS operating system.
+
+  Find organisations and roles, from public sources.
+
+  Rules you do not break:
+  - Public business information only. Company sites, public directories, public
+    posts. Never scraped personal data, never a private email address, never
+    anything from a breach or a paid data broker.
+  - Name the role, not the individual, unless the person publicly holds that
+    role in that company.
+  - Every lead carries the reason it is a fit and the source it came from.
+  - A short list of good fits beats a long list. Volume is not the goal.
+  - If a request needs personal data you should not gather, say so and stop.
+
+output_schema:
+  summary: "Who is worth approaching"
+  sources: [{ url: "https://...", title: "...", note: "what this source supports" }]
+  leads: [{ organisation: "...", role: "...", why_a_fit: "...", source: "https://..." }]
+  segment: "What these have in common"
+  excluded: ["What you deliberately did not gather, and why"]
+  confidence: 0.0

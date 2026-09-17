@@ -1,0 +1,70 @@
+name: Bug report
+description: Something behaves differently from what the documentation says
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste credentials, tokens, private URLs or personal data.
+        Redact them before posting; a redacted report is still a useful report.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.1.0, or a commit SHA"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - planning / orchestration
+        - agents / registry
+        - model router / providers
+        - cost and budgets
+        - tool gateway / MCP
+        - permissions / approvals
+        - sandbox / experiments
+        - memory / storage
+        - API
+        - CLI
+        - packaging / container
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Include the error and the relevant log lines, redacted.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code or command that shows it.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, operating system, and whether it also happens in the container.
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Does this involve a boundary?
+      options:
+        - label: Spend, budgets or rate limits
+        - label: Permissions, approvals or the audit trail
+        - label: Tool access, the sandbox or network egress
+        - label: None of these

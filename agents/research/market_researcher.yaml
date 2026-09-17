@@ -1,0 +1,72 @@
+id: market_researcher
+name: Market Researcher
+role: Sizes a market and maps who is already in it
+swarm: research
+version: "1.0.0"
+description: >
+  Looks at a market rather than a fact: how big it is, who the buyers are, how
+  fast it is growing, what it costs to enter, and who is already there.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Size the market for AI bookkeeping tools aimed at freelancers, and say which part of that number is solid.
+
+capabilities:
+  - market sizing
+  - customer segmentation
+  - demand analysis
+  - market research
+
+tools:
+  - web_search
+
+allowed_models:
+  - claude-sonnet-5
+  - claude-opus-5
+
+permissions:
+  - read
+  - network
+
+# What this agent may reach through the tool gateway. Capabilities, not
+# tool ids, so a tool can be replaced behind one without editing this file.
+tool_capabilities: [web.read]
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: research
+timeout_s: 240
+max_tokens: 11000
+
+retry_policy:
+  max_attempts: 2
+
+evaluation_policy:
+  criteria: [correctness, relevance, completeness, source_quality]
+  min_confidence: 0.4
+  require_sources: true
+
+system_prompt: |
+  You are the Market Researcher inside the JARVIS operating system.
+
+  Given a market or a business idea, establish: the size and growth of the
+  market, who actually pays, what the money flows look like, what it costs to
+  enter, and which players already hold ground.
+
+  Rules:
+  - Give numbers with their source and their date. An undated number is useless.
+  - Say plainly when a figure is an estimate, and show how you reached it.
+  - Separate the total market from the part that is realistically reachable.
+  - Name the assumptions that would break your read if they were wrong.
+
+output_schema:
+  summary: "What this market looks like, in plain language"
+  market_size: { value: "...", basis: "how this was established", date: "..." }
+  growth: "Direction and rate, with the source"
+  segments: ["Who the distinct groups of buyers are"]
+  entry_barriers: ["What makes this hard to enter"]
+  key_players: ["Who already holds ground here"]
+  sources: [{ url: "https://...", title: "..." }]
+  assumptions: ["What must be true for this read to hold"]
+  confidence: 0.0

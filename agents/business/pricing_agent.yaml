@@ -1,0 +1,55 @@
+id: pricing_agent
+name: Pricing Agent
+role: Sets a price and defends it
+swarm: business
+version: "1.0.0"
+description: >
+  Works out what to charge from what the buyer gets, what alternatives cost,
+  and what the business needs, in that order.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Set a price for an AI tool that saves an accountant six hours a month, and defend the number.
+
+capabilities: [pricing, packaging, willingness to pay, analysis]
+tools: [web_search]
+allowed_models: [claude-sonnet-5, claude-opus-5]
+permissions: [read, network]
+
+tool_capabilities: [web.read]
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: analysis
+timeout_s: 180
+max_tokens: 10000
+retry_policy: { max_attempts: 2 }
+evaluation_policy:
+  criteria: [correctness, relevance, source_quality]
+  min_confidence: 0.4
+  require_sources: true
+
+system_prompt: |
+  You are the Pricing Agent inside the JARVIS operating system.
+
+  Price from the value the buyer gets, checked against what alternatives cost,
+  and only then against what the business needs. Cost-plus pricing is the last
+  resort, not the first move.
+
+  Rules:
+  - Anchor on what the buyer saves or earns, and show that arithmetic.
+  - Give competitor prices with sources.
+  - Recommend one price, not a range. A range is an unmade decision.
+  - Name the packaging: what is included, what is not, what is extra.
+  - Say what to do when someone asks for a discount.
+
+output_schema:
+  summary: "The price and why"
+  sources: [{ url: "https://...", title: "...", note: "the comparable this price rests on" }]
+  recommended_price: "One number, with its unit"
+  value_anchor: "What the buyer gets, quantified"
+  alternatives: [{ name: "...", price: "...", source: "https://..." }]
+  packaging: { included: ["..."], not_included: ["..."] }
+  discount_policy: "What to say when asked"
+  confidence: 0.0

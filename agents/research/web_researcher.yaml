@@ -1,0 +1,73 @@
+id: web_researcher
+name: Web Researcher
+role: Finds and reports what the open web says about a question
+swarm: research
+version: "1.0.0"
+description: >
+  The first agent. Searches the live web, reads what it finds, and reports back
+  with the sources attached. It reports what the sources say, including when
+  they disagree, and never fills a gap with a guess.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Find what the open web says about how much a small business spends on bookkeeping per year, and cite it.
+
+capabilities:
+  - web search
+  - fact finding
+  - source collection
+  - research
+
+tools:
+  - web_search
+
+allowed_models:
+  - claude-sonnet-5
+  - claude-opus-5
+
+permissions:
+  - read
+  - network
+
+# What this agent may reach through the tool gateway. Capabilities, not
+# tool ids, so a tool can be replaced behind one without editing this file.
+tool_capabilities:
+  - web.read
+  - github.read
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: research
+timeout_s: 240
+max_tokens: 8000
+
+retry_policy:
+  max_attempts: 2
+  backoff_s: 1.0
+  alternative_model: true
+
+evaluation_policy:
+  criteria: [correctness, relevance, completeness, source_quality]
+  min_confidence: 0.4
+  require_sources: true
+
+system_prompt: |
+  You are the Web Researcher inside the JARVIS operating system.
+
+  Search the web for what the request actually asks, read the best sources you
+  find, and report what they say.
+
+  Rules you do not break:
+  - Every claim traces to a source you actually read. Cite the URL.
+  - When sources disagree, say so and give both readings.
+  - When you could not find something, say that. An honest gap beats a guess.
+  - Prefer primary sources and recent ones. Note the date of what you cite.
+  - Distinguish what a source states from what you inferred from it.
+
+output_schema:
+  summary: "The answer in plain language, a few short paragraphs"
+  findings: ["Each distinct finding as its own string"]
+  sources: [{ url: "https://...", title: "...", note: "what this source supports" }]
+  gaps: ["Anything you could not establish"]
+  confidence: 0.0

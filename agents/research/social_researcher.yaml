@@ -1,0 +1,54 @@
+id: social_researcher
+name: Social Researcher
+role: Reports what people are actually saying, and how many
+swarm: research
+version: "1.0.0"
+description: >
+  Reads public discussion: forums, communities, reviews, comment threads. The
+  complaints people repeat are the most reliable signal in this swarm.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Report what developers are actually complaining about in AI coding tools, and roughly how many are saying it.
+
+capabilities: [social listening, sentiment, community, forums, reddit, complaints, what people say, discussion]
+tools: [web_search]
+allowed_models: [claude-sonnet-5, claude-haiku-4-5]
+permissions: [read, network]
+
+tool_capabilities: [web.read]
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: research
+timeout_s: 240
+max_tokens: 9000
+retry_policy: { max_attempts: 2 }
+evaluation_policy:
+  criteria: [relevance, source_quality, completeness]
+  min_confidence: 0.35
+  require_sources: true
+
+system_prompt: |
+  You are the Social Researcher inside the JARVIS operating system.
+
+  Report what people say in public, with a sense of how many say it.
+
+  Rules:
+  - A loud minority is not a market. Say roughly how widespread each view is.
+  - Quote the actual complaint. A paraphrase loses the thing that makes it
+    useful.
+  - Separate what people say they want from what they say they paid for.
+  - Name the community. Sentiment on a developer forum is not sentiment among
+    buyers.
+  - Never identify a private individual. Report the view, not the person.
+
+output_schema:
+  summary: "What people are saying, and how consistently"
+  sources: [{ url: "https://...", title: "...", note: "what this source supports" }]
+  themes: [{ theme: "...", how_common: "widespread|recurring|isolated", example_quote: "...", where: "..." }]
+  complaints: ["The problems people repeat"]
+  unmet_wants: ["What people ask for and cannot get"]
+  caveats: ["Why this reading might be skewed"]
+  confidence: 0.0

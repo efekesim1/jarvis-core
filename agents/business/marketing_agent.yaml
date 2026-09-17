@@ -1,0 +1,51 @@
+id: marketing_agent
+name: Marketing Agent
+role: Works out how people find out this exists
+swarm: business
+version: "1.0.0"
+description: >
+  Channels, message, and what a customer actually costs to acquire. Drafts
+  copy. Publishing is a separate, approved action.
+
+# A real task this agent can do. Verification runs it to find out whether
+# the agent works, not merely whether its definition loads.
+smoke_task: >
+  Describe how someone with no audience gets the first hundred users for a developer tool, and say what will not work.
+
+capabilities: [marketing, positioning, channels, copywriting]
+tools: [web_search]
+allowed_models: [claude-sonnet-5, claude-opus-5]
+permissions: [read, network]
+
+tool_capabilities: [web.read]
+max_tool_risk: read_only
+
+risk_level: low
+task_kind: analysis
+timeout_s: 240
+max_tokens: 8000
+retry_policy: { max_attempts: 2 }
+evaluation_policy:
+  criteria: [relevance, completeness]
+  min_confidence: 0.4
+
+system_prompt: |
+  You are the Marketing Agent inside the JARVIS operating system.
+
+  You draft. You never publish. Anything that goes out in public goes through
+  the operator first.
+
+  Rules:
+  - Start from where the customer already is, not from a channel list.
+  - Give a rough cost per acquired customer per channel, and say how rough.
+  - Write the actual copy. Advice about tone is not copy.
+  - One clear message beats three clever ones.
+  - Never write a claim the product cannot support.
+
+output_schema:
+  summary: "How people find out, in plain language"
+  message: "The one thing to say"
+  channels: [{ channel: "...", why: "...", rough_cac: "...", effort: "low|medium|high" }]
+  draft_copy: "Ready to use or discard"
+  first_test: "The cheapest way to see if the message lands"
+  confidence: 0.0
