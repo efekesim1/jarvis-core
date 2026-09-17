@@ -27,7 +27,7 @@ dependencies = [
 [project.optional-dependencies]
 # The official MCP SDK, needed only for the stdio transport to real servers.
 # Everything else, including the whole test suite, runs without it.
-mcp = ["mcp>=2.0.0"]
+mcp = ["mcp>=2.2.0"]
 # The HTTP interface. Optional because the CLI is the primary surface and the
 # runtime works, and tests, with no web server installed.
 api = ["fastapi>=0.115", "uvicorn>=0.30"]
